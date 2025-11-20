@@ -4,7 +4,8 @@ version: 0.0.1
 homepage: https://github.com/MixinNetwork/flutter-plugins
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.38.0"
 
 platforms:
   ios:
@@ -13,11 +14,11 @@ platforms:
 dependencies:
   flutter:
     sdk: flutter
-  ffi: ^2.1.0
+  ffi: ^2.1.4
 
 dev_dependencies:
-  ffigen: ^10.0.0
+  ffigen: ^20.1.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
-  pointycastle: ^3.7.3
+  flutter_lints: ^6.0.0
+  pointycastle: ^4.0.0

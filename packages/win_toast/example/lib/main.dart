@@ -9,7 +9,7 @@ import 'package:win_toast/win_toast.dart';
 void main() async {
   final dir = await getApplicationDocumentsDirectory();
   final logPath = p.join(dir.path, 'log');
-  await initLogger(logPath);
+  initLogger(logPath);
   i('logPath: $logPath');
   runApp(const MyApp());
 }
@@ -44,10 +44,30 @@ class _MyAppState extends State<MyApp> {
     WinToast.instance().setActivatedCallback((event) {
       i('onNotificationActivated: $event');
       showDialog(
+        context: _navigatorKey.currentState!.context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('onNotificationActivated'),
+            content: Text(event.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+
+      WinToast.instance().setDismissedCallback((event) {
+        i('onNotificationDismissed: $event');
+        showDialog(
           context: _navigatorKey.currentState!.context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('onNotificationActivated'),
+              title: const Text('onNotificationDismissed'),
               content: Text(event.toString()),
               actions: [
                 TextButton(
@@ -58,26 +78,8 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             );
-          });
-
-      WinToast.instance().setDismissedCallback((event) {
-        i('onNotificationDismissed: $event');
-        showDialog(
-            context: _navigatorKey.currentState!.context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('onNotificationDismissed'),
-                content: Text(event.toString()),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            });
+          },
+        );
       });
     });
   }
@@ -87,12 +89,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       navigatorKey: _navigatorKey,
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: !_initialized
-            ? const Center(child: Text('initializing...'))
-            : const Center(child: MainPage()),
+        appBar: AppBar(title: const Text('Plugin example app')),
+        body: !_initialized ? const Center(child: Text('initializing...')) : const Center(child: MainPage()),
       ),
     );
   }
@@ -150,23 +148,14 @@ class _MainPageState extends State<MainPage> {
                     ToastChildVisual(
                       binding: ToastVisualBinding(
                         children: [
-                          ToastVisualBindingChildText(
-                            text: 'HelloWorld',
-                            id: 1,
-                          ),
-                          ToastVisualBindingChildText(
-                            text: 'by win_toast',
-                            id: 2,
-                          ),
+                          ToastVisualBindingChildText(text: 'HelloWorld', id: 1),
+                          ToastVisualBindingChildText(text: 'by win_toast', id: 2),
                         ],
                       ),
                     ),
-                    ToastChildActions(children: [
-                      ToastAction(
-                        content: "Close",
-                        arguments: "close_argument",
-                      )
-                    ]),
+                    ToastChildActions(
+                      children: [ToastAction(content: "Close", arguments: "close_argument")],
+                    ),
                   ],
                 ),
               );
