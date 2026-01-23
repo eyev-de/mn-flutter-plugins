@@ -27,6 +27,9 @@ struct WindowOptions {
     let acceptsMouseMovedEvents: Bool?
     let animationBehavior: String?
 
+    // App-level property (affects entire application)
+    let activationPolicy: Int?
+
     init?(json: [String: Any]) {
         // Use default values for optional parameters
         self.type = json["type"] as? String ?? "NSWindow"
@@ -50,21 +53,25 @@ struct WindowOptions {
         
         self.windowButtonVisibility = json["windowButtonVisibility"] as? Bool ?? true
 
-        // NSWindow-specific properties.
+        // collectionBehavior works for both NSWindow and NSPanel
+        self.collectionBehavior = json["collectionBehavior"] as? Int
+        self.ignoresMouseEvents = json["ignoresMouseEvents"] as? Bool
+
+        // Global app-level property (works for both NSWindow and NSPanel)
+        // Changes can reset window styling options
+        self.activationPolicy = json["activationPolicy"] as? Int
+
+        // NSWindow-specific properties
         if type == "NSWindow" {
             self.isModal = json["isModal"] as? Bool
             self.titleVisibility = json["titleVisibility"] as? String
             self.titlebarAppearsTransparent = json["titlebarAppearsTransparent"] as? Bool
-            self.collectionBehavior = json["collectionBehavior"] as? Int
-            self.ignoresMouseEvents = json["ignoresMouseEvents"] as? Bool
             self.acceptsMouseMovedEvents = json["acceptsMouseMovedEvents"] as? Bool
             self.animationBehavior = json["animationBehavior"] as? String
         } else {
             self.isModal = nil
             self.titleVisibility = nil
             self.titlebarAppearsTransparent = nil
-            self.collectionBehavior = nil
-            self.ignoresMouseEvents = nil
             self.acceptsMouseMovedEvents = nil
             self.animationBehavior = nil
         }

@@ -284,6 +284,7 @@ class WindowControllerImpl extends WindowController {
     int? styleMask,
     int? collectionBehavior,
     MacOsWindowLevel? level,
+    MacOsActivationPolicy? activationPolicy,
     bool? isOpaque,
     bool? hasShadow,
     Color? backgroundColor,
@@ -297,6 +298,7 @@ class WindowControllerImpl extends WindowController {
         if (styleMask != null) 'styleMask': styleMask,
         if (collectionBehavior != null) 'collectionBehavior': collectionBehavior,
         if (level != null) 'level': level.value,
+        if (activationPolicy != null) 'activationPolicy': activationPolicy.value,
         if (isOpaque != null) 'isOpaque': isOpaque,
         if (hasShadow != null) 'hasShadow': hasShadow,
         if (backgroundColor != null) 'backgroundColor': backgroundColor.toJson(),
@@ -322,5 +324,12 @@ class WindowControllerImpl extends WindowController {
   @override
   Future<void> setIgnoreMouseEvents(bool ignore) async {
     return await _channel.invokeMethod('setIgnoreMouseEvents', {'windowId': _id, 'ignore': ignore});
+  }
+
+  @override
+  Future<void> startDrag() async {
+    if (Platform.isMacOS) {
+      return await _channel.invokeMethod('startDrag', {'windowId': _id});
+    }
   }
 }

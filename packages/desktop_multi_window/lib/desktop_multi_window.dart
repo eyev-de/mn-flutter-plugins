@@ -21,6 +21,7 @@ export 'src/macos/title_visibility.dart';
 export 'src/macos/animation_behavior.dart';
 export 'src/window_events.dart';
 export 'src/macos/window_collection_behavior.dart';
+export 'src/macos/activation_policy.dart';
 
 class DesktopMultiWindow {
   /// Create a new Window.
