@@ -27,7 +27,7 @@ public class FlutterMultiWindowPlugin: NSObject, FlutterPlugin {
       window: window, mainWindowInterWindowEventChannel, mainWindowEventsChannel)
   }
 
-  public typealias OnWindowCreatedCallback = (FlutterViewController) -> Void
+  public typealias OnWindowCreatedCallback = (FlutterViewController, Int64) -> Void
   static var onWindowCreatedCallback: OnWindowCreatedCallback?
 
   public static func setOnWindowCreatedCallback(_ callback: @escaping OnWindowCreatedCallback) {
@@ -56,6 +56,12 @@ public class FlutterMultiWindowPlugin: NSObject, FlutterPlugin {
     case "getAllSubWindowIds":
       let subWindowIds = MultiWindowManager.shared.getAllSubWindowIds()
       result(subWindowIds)
+    case "enableMouseTracking":
+      MultiWindowManager.shared.enableMouseTracking()
+      result(nil)
+    case "disableMouseTracking":
+      MultiWindowManager.shared.disableMouseTracking()
+      result(nil)
     default:
       guard let arguments = call.arguments as? [String: Any?] else {
         result(FlutterError(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../extensions.dart';
+import 'activation_policy.dart';
 import 'window_collection_behavior.dart';
 import 'window_level.dart';
 import 'window_style_mask.dart';
@@ -35,6 +36,9 @@ class MacOSWindowOptions {
   final bool acceptsMouseMovedEvents;
   final MacOsAnimationBehavior animationBehavior;
 
+  // App-level property (affects entire application)
+  final MacOsActivationPolicy? activationPolicy;
+
   const MacOSWindowOptions({
     this.type = MacOsWindowType.NSWindow,
     this.level = MacOsWindowLevel.normal,
@@ -65,6 +69,7 @@ class MacOSWindowOptions {
     this.ignoresMouseEvents = false,
     this.acceptsMouseMovedEvents = false,
     this.animationBehavior = MacOsAnimationBehavior.defaultBehavior,
+    this.activationPolicy,
   }); /* : assert(
           type != MacOSWindowType.NSPanel || (styleMask & MacOSWindowStyleMask.utility) != 0,
           'NSPanel requires the utility style mask to be set.',
@@ -227,6 +232,7 @@ class MacOSWindowOptions {
         'ignoresMouseEvents': ignoresMouseEvents,
         'acceptsMouseMovedEvents': acceptsMouseMovedEvents,
         'animationBehavior': animationBehavior.value,
+        if (activationPolicy != null) 'activationPolicy': activationPolicy!.value,
       };
   }
 }

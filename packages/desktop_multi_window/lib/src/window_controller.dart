@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'macos/activation_policy.dart';
 import 'macos/window_level.dart';
 import 'window_controller_impl.dart';
 import 'window_events.dart';
@@ -91,6 +92,7 @@ abstract class WindowController {
     int? styleMask,
     int? collectionBehavior,
     MacOsWindowLevel? level,
+    MacOsActivationPolicy? activationPolicy,
     bool? isOpaque,
     bool? hasShadow,
     Color? backgroundColor,
@@ -112,4 +114,10 @@ abstract class WindowController {
 
   /// Whether the window can receive mouse events.
   Future<void> setIgnoreMouseEvents(bool ignore);
+
+  /// Start native window dragging. Available only on macOS.
+  ///
+  /// This uses macOS native `performDrag` for smooth window movement.
+  /// Call this from a gesture detector's onPanStart callback.
+  Future<void> startDrag();
 }

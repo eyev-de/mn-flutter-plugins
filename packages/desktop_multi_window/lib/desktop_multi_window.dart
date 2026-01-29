@@ -21,6 +21,7 @@ export 'src/macos/title_visibility.dart';
 export 'src/macos/animation_behavior.dart';
 export 'src/window_events.dart';
 export 'src/macos/window_collection_behavior.dart';
+export 'src/macos/activation_policy.dart';
 
 class DesktopMultiWindow {
   /// Create a new Window.
@@ -95,5 +96,21 @@ class DesktopMultiWindow {
     assert(!ids.contains(0), 'ids must not contains main window id');
     assert(ids.every((id) => id > 0), 'id must be greater than 0');
     return ids;
+  }
+
+  /// Enable global mouse tracking.
+  ///
+  /// On macOS, this creates a CGEvent tap which requires Accessibility permission.
+  /// Call this AFTER the user has granted Accessibility permission to avoid
+  /// triggering the system permission dialog at app startup.
+  static Future<void> enableMouseTracking() async {
+    await multiWindowChannel.invokeMethod('enableMouseTracking');
+  }
+
+  /// Disable global mouse tracking.
+  ///
+  /// Removes the CGEvent tap and stops receiving mouse move events.
+  static Future<void> disableMouseTracking() async {
+    await multiWindowChannel.invokeMethod('disableMouseTracking');
   }
 }

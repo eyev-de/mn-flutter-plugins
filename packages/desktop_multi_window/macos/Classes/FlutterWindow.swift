@@ -464,10 +464,33 @@ class BaseFlutterWindow: NSObject {
       window.level = NSWindow.Level(rawValue: level ?? 0)
       window.isOpaque = isOpaque
       window.hasShadow = hasShadow
+
+      // Set activation policy if specified
+      if let policy = arguments?["activationPolicy"] as? Int {
+        switch policy {
+        case 0:
+          NSApplication.shared.setActivationPolicy(.regular)
+          // Activate app so Dock icon appears immediately
+          NSApplication.shared.activate(ignoringOtherApps: false)
+        case 1:
+          NSApplication.shared.setActivationPolicy(.accessory)
+        case 2:
+          NSApplication.shared.setActivationPolicy(.prohibited)
+        default:
+          break
+        }
+      }
       result(nil)
     case "setIgnoreMouseEvents":
       let ignoresMouseEvents = arguments?["ignore"] as? Bool ?? false
       window.ignoresMouseEvents = ignoresMouseEvents
+      result(nil)
+    case "startDrag":
+      // Start native window dragging using macOS performDrag
+      // This provides smooth, native window movement
+      if let event = NSApp.currentEvent {
+        window.performDrag(with: event)
+      }
       result(nil)
     default:
       result(FlutterMethodNotImplemented)
@@ -614,7 +637,7 @@ class FlutterWindow: BaseFlutterWindow {
     let windowEventsChannel = WindowEventsChannel.register(returns: plugin)
 
     // Give app a chance to register plugins.
-    FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController)
+    FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController, id)
 
     super.init(
       id: id, window: createdWindow, interWindowEventChannel: interWindowEventChannel,
@@ -646,6 +669,23 @@ class FlutterWindow: BaseFlutterWindow {
     let frameRect = NSWindow.frameRect(
       forContentRect: contentRect, styleMask: createdWindow.styleMask)
     createdWindow.setFrame(frameRect, display: true)
-    NSApplication.shared.setActivationPolicy(.accessory)
+
+    // Set global activation policy if specified, otherwise default to .accessory
+    if let policy = windowOptions.activationPolicy {
+      switch policy {
+      case 0:
+        NSApplication.shared.setActivationPolicy(.regular)
+        // Activate app so Dock icon appears immediately
+        NSApplication.shared.activate(ignoringOtherApps: false)
+      case 1:
+        NSApplication.shared.setActivationPolicy(.accessory)
+      case 2:
+        NSApplication.shared.setActivationPolicy(.prohibited)
+      default:
+        NSApplication.shared.setActivationPolicy(.accessory)
+      }
+    } else {
+      NSApplication.shared.setActivationPolicy(.accessory)
+    }
   }
 }

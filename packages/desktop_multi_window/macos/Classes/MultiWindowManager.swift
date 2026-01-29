@@ -41,7 +41,27 @@ class MultiWindowManager {
   private var runLoopSource: CFRunLoopSource?
 
   init() {
+    // Mouse monitor is now enabled lazily via enableMouseTracking()
+  }
+
+  /// Enable mouse tracking - call this AFTER accessibility permission is granted
+  func enableMouseTracking() {
+    // Only setup once
+    guard eventTap == nil else { return }
     setupMouseMonitor()
+  }
+
+  /// Disable mouse tracking
+  func disableMouseTracking() {
+    if let runLoop = runLoopSource {
+      CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoop, .commonModes)
+      runLoopSource = nil
+    }
+
+    if let tap = eventTap {
+      CGEvent.tapEnable(tap: tap, enable: false)
+      eventTap = nil
+    }
   }
 
   private func setupMouseMonitor() {
@@ -64,7 +84,7 @@ class MultiWindowManager {
             "x": location.x,
             "y": location.y
           ]
-          
+
           let args: [String: Any] = [
             "eventName": "mouse-move",
             "eventData": coordinates
@@ -91,7 +111,7 @@ class MultiWindowManager {
       return
     }
     runLoopSource = runLoop
-    
+
     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoop, .commonModes)
     CGEvent.tapEnable(tap: tap, enable: true)
   }
@@ -111,7 +131,7 @@ class MultiWindowManager {
     if let runLoop = runLoopSource {
       CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoop, .commonModes)
     }
-    
+
     if let tap = eventTap {
       CGEvent.tapEnable(tap: tap, enable: false)
     }
@@ -190,11 +210,11 @@ class MultiWindowManager {
   func getWindowState(windowId: Int64) -> WindowState? {
     windowsLock.lock()
     defer { windowsLock.unlock() }
-    
+
     guard let window = windows[windowId] else {
       return nil
     }
-    
+
     return window.getWindowState()
   }
 
