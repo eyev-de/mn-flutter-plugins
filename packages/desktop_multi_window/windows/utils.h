@@ -7,13 +7,37 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-inline int64_t GetIntegerValue(const flutter::EncodableValue& value) {
-    if (std::holds_alternative<int32_t>(value)) {
-        return std::get<int32_t>(value);
-    } else if (std::holds_alternative<int64_t>(value)) {
-        return std::get<int64_t>(value);
-    }
-    throw std::runtime_error("Value is not an integer");
+// Safe value extraction helpers.
+// Using std::get<T> with _HAS_EXCEPTIONS=0 (Flutter default) calls abort()
+// on type mismatch. These helpers return a default value instead.
+
+inline int64_t GetIntegerValue(const flutter::EncodableValue& value, int64_t fallback = 0) {
+    if (auto* p = std::get_if<int32_t>(&value)) return *p;
+    if (auto* p = std::get_if<int64_t>(&value)) return *p;
+    return fallback;
+}
+
+inline int32_t GetInt32Value(const flutter::EncodableValue& value, int32_t fallback = 0) {
+    if (auto* p = std::get_if<int32_t>(&value)) return *p;
+    if (auto* p = std::get_if<int64_t>(&value)) return static_cast<int32_t>(*p);
+    return fallback;
+}
+
+inline bool GetBoolValue(const flutter::EncodableValue& value, bool fallback = false) {
+    if (auto* p = std::get_if<bool>(&value)) return *p;
+    return fallback;
+}
+
+inline double GetDoubleValue(const flutter::EncodableValue& value, double fallback = 0.0) {
+    if (auto* p = std::get_if<double>(&value)) return *p;
+    if (auto* p = std::get_if<int32_t>(&value)) return static_cast<double>(*p);
+    if (auto* p = std::get_if<int64_t>(&value)) return static_cast<double>(*p);
+    return fallback;
+}
+
+inline std::string GetStringValue(const flutter::EncodableValue& value, const std::string& fallback = "") {
+    if (auto* p = std::get_if<std::string>(&value)) return *p;
+    return fallback;
 }
 
 inline const flutter::EncodableValue* ValueOrNull(const flutter::EncodableMap& map, const char* key) {
@@ -22,6 +46,21 @@ inline const flutter::EncodableValue* ValueOrNull(const flutter::EncodableMap& m
         return nullptr;
     }
     return &(it->second);
+}
+
+// Safe .at() replacement - returns a static monostate value instead of throwing
+inline const flutter::EncodableValue& SafeAt(const flutter::EncodableMap& map, const char* key) {
+    static const flutter::EncodableValue kEmpty;
+    auto it = map.find(flutter::EncodableValue(key));
+    if (it == map.end()) {
+        return kEmpty;
+    }
+    return it->second;
+}
+
+// Safe windowId extraction from arguments map
+inline int64_t GetWindowId(const flutter::EncodableMap& map) {
+    return GetIntegerValue(SafeAt(map, "windowId"));
 }
 
 inline void PrintEncodableValue(const flutter::EncodableValue& value, int indent = 0) {

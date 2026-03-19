@@ -101,7 +101,7 @@ namespace
       return;
     } else if (method_call.method_name() == "setHasListeners") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto* null_or_has_listeners = std::get_if<bool>(ValueOrNull(*arguments, "hasListeners"));
       bool has_listeners = false;
       if (null_or_has_listeners != nullptr) {
@@ -112,25 +112,25 @@ namespace
       return;
     } else if (method_call.method_name() == "show") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Show(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "hide") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Hide(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "close") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Close(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "setFrame") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
 
       auto* null_or_devicePixelRatio = std::get_if<double>(ValueOrNull(*arguments, "devicePixelRatio"));
       double devicePixelRatio = 1.0;
@@ -176,102 +176,103 @@ namespace
       return;
     } else if (method_call.method_name() == "getFrame") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      double devicePixelRatio = std::get<double>(arguments->at(flutter::EncodableValue("devicePixelRatio")));
+      auto window_id = GetWindowId(*arguments);
+      double devicePixelRatio = GetDoubleValue(SafeAt(*arguments, "devicePixelRatio"), 1.0);
       auto frame = MultiWindowManager::Instance()->GetFrame(window_id, devicePixelRatio);
       result->Success(frame);
       return;
     } else if (method_call.method_name() == "center") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Center(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "setTitle") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      auto title = std::get<std::string>(arguments->at(flutter::EncodableValue("title")));
+      auto window_id = GetWindowId(*arguments);
+      auto title = GetStringValue(SafeAt(*arguments, "title"));
       MultiWindowManager::Instance()->SetTitle(window_id, title);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "isFocused") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto is_focused = MultiWindowManager::Instance()->IsFocused(window_id);
       result->Success(flutter::EncodableValue(is_focused));
       return;
     } else if (method_call.method_name() == "isFullScreen") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto is_full_screen = MultiWindowManager::Instance()->IsFullScreen(window_id);
       result->Success(flutter::EncodableValue(is_full_screen));
       return;
     } else if (method_call.method_name() == "isMaximized") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto is_maximized = MultiWindowManager::Instance()->IsMaximized(window_id);
       result->Success(flutter::EncodableValue(is_maximized));
       return;
     } else if (method_call.method_name() == "isMinimized") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto is_minimized = MultiWindowManager::Instance()->IsMinimized(window_id);
       result->Success(flutter::EncodableValue(is_minimized));
       return;
     } else if (method_call.method_name() == "isVisible") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       auto is_visible = MultiWindowManager::Instance()->IsVisible(window_id);
       result->Success(flutter::EncodableValue(is_visible));
       return;
     } else if (method_call.method_name() == "maximize") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      bool vertically = std::get<bool>(arguments->at(flutter::EncodableValue("vertically")));
+      auto window_id = GetWindowId(*arguments);
+      bool vertically = GetBoolValue(SafeAt(*arguments, "vertically"));
       std::cout << "maximize: " << window_id << " " << vertically << std::endl;
       MultiWindowManager::Instance()->Maximize(window_id, vertically);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "unmaximize") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Unmaximize(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "minimize") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Minimize(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "restore") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       MultiWindowManager::Instance()->Restore(window_id);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "setFullScreen") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      auto is_full_screen = std::get<bool>(arguments->at(flutter::EncodableValue("isFullScreen")));
+      auto window_id = GetWindowId(*arguments);
+      auto is_full_screen = GetBoolValue(SafeAt(*arguments, "isFullScreen"));
       MultiWindowManager::Instance()->SetFullScreen(window_id, is_full_screen);
       result->Success(flutter::EncodableValue(true));
       return;
     } else if (method_call.method_name() == "setStyle") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      auto style = std::get<int32_t>(arguments->at(flutter::EncodableValue("style")));
-      auto extended_style = std::get<int32_t>(arguments->at(flutter::EncodableValue("extendedStyle")));
+      if (!arguments) { result->Error("invalid_args"); return; }
+      auto window_id_val = ValueOrNull(*arguments, "windowId");
+      if (!window_id_val) { result->Error("missing_windowId"); return; }
+      auto window_id = GetIntegerValue(*window_id_val);
+      auto* style_val = ValueOrNull(*arguments, "style");
+      auto* ext_style_val = ValueOrNull(*arguments, "extendedStyle");
+      int32_t style = style_val ? GetInt32Value(*style_val) : 0;
+      int32_t extended_style = ext_style_val ? GetInt32Value(*ext_style_val) : 0;
       Color backgroundColor;
-      try {
-        auto backgroundColorIter = arguments->find(flutter::EncodableValue("backgroundColor"));
-        if (backgroundColorIter != arguments->end() &&
-          std::holds_alternative<flutter::EncodableMap>(backgroundColorIter->second)) {
-          const auto& backgroundColorMap = std::get<flutter::EncodableMap>(backgroundColorIter->second);
-          backgroundColor = Color::ParseColor(backgroundColorMap);
-        }
-      } catch (const std::exception& e) {
-        std::cerr << L"Error parsing background color: " << e.what() << std::endl;
+      auto backgroundColorIter = arguments->find(flutter::EncodableValue("backgroundColor"));
+      if (backgroundColorIter != arguments->end() &&
+        std::holds_alternative<flutter::EncodableMap>(backgroundColorIter->second)) {
+        const auto& backgroundColorMap = std::get<flutter::EncodableMap>(backgroundColorIter->second);
+        backgroundColor = Color::ParseColor(backgroundColorMap);
       }
       MultiWindowManager::Instance()->SetBackgroundColor(window_id, backgroundColor);
       MultiWindowManager::Instance()->SetStyle(window_id, style, extended_style);
@@ -279,7 +280,7 @@ namespace
       return;
     } else if (method_call.method_name() == "setBackgroundColor") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
+      auto window_id = GetWindowId(*arguments);
       Color backgroundColor;
       try {
         auto backgroundColorIter = arguments->find(flutter::EncodableValue("backgroundColor"));
@@ -300,8 +301,8 @@ namespace
       return;
     } else if (method_call.method_name() == "setIgnoreMouseEvents") {
       auto* arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
-      auto window_id = arguments->at(flutter::EncodableValue("windowId")).LongValue();
-      auto ignore = std::get<bool>(arguments->at(flutter::EncodableValue("ignore")));
+      auto window_id = GetWindowId(*arguments);
+      auto ignore = GetBoolValue(SafeAt(*arguments, "ignore"));
       MultiWindowManager::Instance()->SetIgnoreMouseEvents(window_id, ignore);
       result->Success(flutter::EncodableValue(true));
       return;
