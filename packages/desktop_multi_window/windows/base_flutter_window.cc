@@ -456,7 +456,7 @@ void BaseFlutterWindow::SetStyle(int32_t new_style, int32_t new_extended_style) 
   GetWindowRect(handle, &windowRect);
 
   // Store current visibility and maximized state
-  bool wasVisible = IsWindowVisible(handle);
+  // bool wasVisible = IsWindowVisible(handle);
   bool wasMaximized = IsZoomed(handle);
 
   // It's often safer to restore a maximized window before changing its style,
@@ -518,7 +518,7 @@ void BaseFlutterWindow::SetStyle(int32_t new_style, int32_t new_extended_style) 
     windowRect.top,
     windowRect.right - windowRect.left,
     windowRect.bottom - windowRect.top,
-    flags | (wasVisible ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)
+    flags
     // SWP_NOOWNERZORDER: Usually good to include if you don't want to affect owned windows' Z-order.
     // Not strictly necessary here for the primary goal.
   );
