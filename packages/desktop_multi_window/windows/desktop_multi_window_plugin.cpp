@@ -47,7 +47,7 @@ namespace
   void DesktopMultiWindowPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-    // std::cout << "Method called: " << method_call.method_name() << std::endl;
+    // std::cout << "[DMW_Plugin] Method called: " << method_call.method_name() << std::endl;
 
     // if (method_call.arguments()) {
     //   std::cout << "Method call arguments:\n";

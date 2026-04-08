@@ -61,6 +61,13 @@ namespace {
     return dwBuild < 22000;
   }
 
+  WINDOWPLACEMENT GetCurrentWindowPlacement(HWND handle) {
+    WINDOWPLACEMENT windowPlacement{};
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    GetWindowPlacement(handle, &windowPlacement);
+    return windowPlacement;
+  }
+
   void adjustNCCALCSIZE(HWND hwnd, NCCALCSIZE_PARAMS* sz) {
     LONG l = 8;
     LONG t = 8;
@@ -236,10 +243,28 @@ void BaseFlutterWindow::Show() {
   if (!handle) {
     return;
   }
-  ShowWindow(handle, SW_SHOW);
-  
-  // Bring window to front
-  ::SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+
+  const LONG ex_style = GetWindowLong(handle, GWL_EXSTYLE);
+  const bool is_no_activate = (ex_style & WS_EX_NOACTIVATE) != 0;
+  const bool is_topmost = (ex_style & WS_EX_TOPMOST) != 0;
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
+
+  // Hidden overlay windows are created before the first usable frame is visible.
+  // Use the non-activating show path for WS_EX_NOACTIVATE windows and force a
+  // redraw so the first reveal cannot stay stuck in a transparent state.
+  const int show_command = windowPlacement.showCmd == SW_SHOWMINIMIZED
+    ? SW_RESTORE
+    : (is_no_activate ? SW_SHOWNOACTIVATE : SW_SHOW);
+  ShowWindow(handle, show_command);
+
+  UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW;
+  if (is_no_activate) {
+    flags |= SWP_NOACTIVATE;
+  }
+
+  ::SetWindowPos(handle, is_topmost ? HWND_TOPMOST : HWND_TOP, 0, 0, 0, 0, flags);
+  ::UpdateWindow(handle);
+  ::RedrawWindow(handle, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
 }
 
 void BaseFlutterWindow::Hide() {
@@ -293,8 +318,7 @@ bool BaseFlutterWindow::IsMaximized() {
   if (!handle) {
     return false;
   }
-  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
 
   return windowPlacement.showCmd == SW_MAXIMIZE;
 }
@@ -304,8 +328,7 @@ bool BaseFlutterWindow::IsMinimized() {
   if (!handle) {
     return false;
   }
-  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
   return windowPlacement.showCmd == SW_SHOWMINIMIZED;
 }
 
@@ -314,8 +337,7 @@ void BaseFlutterWindow::Maximize(bool vertically) {
   if (!handle) {
     return;
   }
-  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
 
   if (vertically) {
     POINT cursorPos;
@@ -334,8 +356,7 @@ void BaseFlutterWindow::Unmaximize() {
   if (!handle) {
     return;
   }
-  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
 
   if (windowPlacement.showCmd != SW_NORMAL) {
     PostMessage(handle, WM_SYSCOMMAND, SC_RESTORE, 0);
@@ -350,8 +371,8 @@ void BaseFlutterWindow::Minimize() {
   auto handle = GetRootWindowHandle();
   if (!handle) {
     return;
-  }  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  }
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
 
   if (windowPlacement.showCmd != SW_SHOWMINIMIZED) {
     PostMessage(handle, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -363,8 +384,7 @@ void BaseFlutterWindow::Restore() {
   if (!handle) {
     return;
   }
-  WINDOWPLACEMENT windowPlacement;
-  GetWindowPlacement(handle, &windowPlacement);
+  const WINDOWPLACEMENT windowPlacement = GetCurrentWindowPlacement(handle);
 
   if (windowPlacement.showCmd != SW_NORMAL) {
     PostMessage(handle, WM_SYSCOMMAND, SC_RESTORE, 0);

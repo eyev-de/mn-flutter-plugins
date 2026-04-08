@@ -49,10 +49,7 @@ public:
   }
   
   HWND GetRootWindowHandle() {
-    if (!root_window_handle_ || !IsWindow(root_window_handle_)) {
-      root_window_handle_ = GetAncestor(window_handle_, GA_ROOT);
-    }
-    return root_window_handle_;
+    return GetAncestor(window_handle_, GA_ROOT);
   }
 
   bool IsDestroyed() {
@@ -127,9 +124,9 @@ public:
 
 protected:
 
-  int64_t id_;
+  int64_t id_ = 0;
 
-  HWND window_handle_;
+  HWND window_handle_ = nullptr;
 
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
@@ -162,8 +159,6 @@ private:
   RECT g_frame_before_fullscreen;
   bool g_maximized_before_fullscreen;
   LONG g_style_before_fullscreen;
-
-  HWND root_window_handle_;
 
   double aspect_ratio_ = 0;
 
