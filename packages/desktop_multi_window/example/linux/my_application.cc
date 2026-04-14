@@ -62,7 +62,8 @@ static void my_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
-  desktop_multi_window_plugin_set_window_created_callback([](FlPluginRegistry* registry){
+  desktop_multi_window_plugin_set_window_created_callback([](FlPluginRegistry* registry, int64_t window_id){
+    (void)window_id;
     g_autoptr(FlPluginRegistrar) desktop_lifecycle_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "DesktopLifecyclePlugin");
     desktop_lifecycle_plugin_register_with_registrar(desktop_lifecycle_registrar);

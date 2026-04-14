@@ -50,7 +50,7 @@ FlutterWindow::FlutterWindow(
   gtk_container_add(GTK_CONTAINER(window_), GTK_WIDGET(fl_view));
 
   if (_g_window_created_callback) {
-    _g_window_created_callback(FL_PLUGIN_REGISTRY(fl_view));
+    _g_window_created_callback(FL_PLUGIN_REGISTRY(fl_view), id_);
   }
   g_autoptr(FlPluginRegistrar)
       desktop_multi_window_registrar =

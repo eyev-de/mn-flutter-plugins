@@ -42,16 +42,9 @@ class DesktopMultiWindow {
   /// NOTE: [createWindow] will only create a new window, you need to call
   /// [WindowController.show] to show the window.
   static Future<WindowController> createWindow([String? arguments, WindowOptions? options]) async {
-    
-    final Map<String, dynamic> args = {
-      if (arguments != null) 'arguments': arguments,
-      if (options != null) 'options': options.toJson(),
-    };
-    
-    final windowId = await multiWindowChannel.invokeMethod<int>(
-      'createWindow',
-      args,
-    );
+    final Map<String, dynamic> args = {if (arguments != null) 'arguments': arguments, if (options != null) 'options': options.toJson()};
+
+    final windowId = await multiWindowChannel.invokeMethod<int>('createWindow', args);
     assert(windowId != null, 'windowId is null');
     assert(windowId! > 0, 'id must be greater than 0');
     return WindowControllerImpl(windowId!);
@@ -64,10 +57,7 @@ class DesktopMultiWindow {
   ///
   /// [targetWindowId] which window you want to invoke the method.
   static Future<dynamic> invokeMethod(int targetWindowId, String method, [dynamic arguments]) {
-    return interWindowEventChannel.invokeMethod(method, <String, dynamic>{
-      'targetWindowId': targetWindowId,
-      'arguments': arguments,
-    });
+    return interWindowEventChannel.invokeMethod(method, <String, dynamic>{'targetWindowId': targetWindowId, 'arguments': arguments});
   }
 
   /// Add a method handler to the isolate of the window.

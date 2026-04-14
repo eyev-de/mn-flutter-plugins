@@ -2,6 +2,7 @@
 #define FLUTTER_PLUGIN_DESKTOP_MULTI_WINDOW_PLUGIN_H_
 
 #include <flutter_linux/flutter_linux.h>
+#include <stdint.h>
 
 G_BEGIN_DECLS
 
@@ -21,7 +22,7 @@ FLUTTER_PLUGIN_EXPORT GType desktop_multi_window_plugin_get_type();
 FLUTTER_PLUGIN_EXPORT void desktop_multi_window_plugin_register_with_registrar(
     FlPluginRegistrar* registrar);
 
-typedef void (*WindowCreatedCallback)(FlPluginRegistry *registry);
+typedef void (*WindowCreatedCallback)(FlPluginRegistry *registry, int64_t window_id);
 
 FLUTTER_PLUGIN_EXPORT void desktop_multi_window_plugin_set_window_created_callback(
     WindowCreatedCallback callback);

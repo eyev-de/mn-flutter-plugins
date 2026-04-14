@@ -130,7 +130,7 @@ FlutterWindow::FlutterWindow(
   window_events_channel_ = WindowEventsChannel::RegisterWithRegistrar(registrar_plugin);
 
   if (_g_window_created_callback) {
-    _g_window_created_callback(flutter_controller_.get());
+    _g_window_created_callback(flutter_controller_.get(), id_);
   }
 
   SetBackgroundColor(options.backgroundColor);

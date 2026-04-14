@@ -29,7 +29,8 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
-  DesktopMultiWindowSetWindowCreatedCallback([](void *controller) {
+  DesktopMultiWindowSetWindowCreatedCallback([](void *controller, int64_t window_id) {
+    (void)window_id;
     auto *flutter_view_controller =
         reinterpret_cast<flutter::FlutterViewController *>(controller);
     auto *registry = flutter_view_controller->engine();

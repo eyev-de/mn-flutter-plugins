@@ -61,12 +61,7 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(width: 16),
-            Text(
-              'Mouse Position: ${_mousePosition.dx},${_mousePosition.dy}',
-              style: const TextStyle(
-                color: Colors.red,
-              ),
-            ),
+            Text('Mouse Position: ${_mousePosition.dx},${_mousePosition.dy}', style: const TextStyle(color: Colors.red)),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -80,18 +75,12 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
                           const TextSpan(text: 'Window Position '),
                           TextSpan(
                             text: '${_position.dx},${_position.dy}',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
                           ),
                           const TextSpan(text: ' & Size '),
                           TextSpan(
                             text: '${_size.width}x${_size.height}',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
                           ),
                         ],
                       ),
@@ -165,8 +154,7 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
                       children: [
                         ElevatedButton(
                           onPressed: () async {
-                            final position =
-                                Offset(double.parse(xPositionController.text), double.parse(yPositionController.text));
+                            final position = Offset(double.parse(xPositionController.text), double.parse(yPositionController.text));
                             final size = Size(double.parse(widthController.text), double.parse(heightController.text));
                             await widget.controller.setFrame(position & size);
                             setState(() {
@@ -350,11 +338,14 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
-                        await widget.controller.setBackgroundColor(Color.fromARGB(
+                        await widget.controller.setBackgroundColor(
+                          Color.fromARGB(
                             int.parse(backgroundColorAController.text),
                             int.parse(backgroundColorRController.text),
                             int.parse(backgroundColorGController.text),
-                            int.parse(backgroundColorBController.text)));
+                            int.parse(backgroundColorBController.text),
+                          ),
+                        );
                       },
                       child: const Text('Set Background Color'),
                       style: ElevatedButton.styleFrom(
@@ -418,7 +409,18 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
   }
 
   @override
+  void onWindowShow() {
+    print('Window shown');
+  }
+
+  @override
+  void onWindowHide() {
+    print('Window hidden');
+  }
+
+  @override
   void onWindowMove() {
+    print('Window move');
     widget.controller.getPosition().then((position) {
       setState(() {
         _position = position;
@@ -428,6 +430,7 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
 
   @override
   void onWindowMoved() {
+    print('Window moved');
     widget.controller.getPosition().then((position) {
       setState(() {
         _position = position;
@@ -437,6 +440,7 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
 
   @override
   void onWindowResize() {
+    print('Window resize');
     widget.controller.getSize().then((size) {
       setState(() {
         _size = size;
@@ -446,6 +450,7 @@ class _WindowEventsWidgetState extends State<WindowEventsWidget> with WindowEven
 
   @override
   void onWindowResized() {
+    print('Window resized');
     widget.controller.getSize().then((size) {
       setState(() {
         _size = size;

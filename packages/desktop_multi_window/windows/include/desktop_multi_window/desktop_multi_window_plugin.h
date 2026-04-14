@@ -18,7 +18,9 @@ extern "C"
         FlutterDesktopPluginRegistrarRef registrar);
 
     // flutter_view_controller: pointer to the flutter::FlutterViewController
-    typedef void (*WindowCreatedCallback)(void* flutter_view_controller);
+    // window_id: id assigned by MultiWindowManager, letting the host register
+    // a plugin subset specific to each window type.
+    typedef void (*WindowCreatedCallback)(void* flutter_view_controller, int64_t window_id);
     FLUTTER_PLUGIN_EXPORT void DesktopMultiWindowSetWindowCreatedCallback(WindowCreatedCallback callback);
 
 #if defined(__cplusplus)
