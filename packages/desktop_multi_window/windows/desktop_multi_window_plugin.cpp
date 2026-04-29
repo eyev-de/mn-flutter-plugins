@@ -59,6 +59,7 @@ namespace
       // Default values.
       std::string stringArgs = "";
       WindowOptions options;
+      int64_t requested_id = 0;
 
       // Check if the argument is a map.
       if (method_call.arguments() &&
@@ -69,6 +70,16 @@ namespace
         auto argsIter = args_map.find(flutter::EncodableValue("arguments"));
         if (argsIter != args_map.end() && std::holds_alternative<std::string>(argsIter->second)) {
           stringArgs = std::get<std::string>(argsIter->second);
+        }
+
+        // Optional explicit window id.
+        if (auto* id_value = ValueOrNull(args_map, "windowId")) {
+          requested_id = GetIntegerValue(*id_value);
+          if (requested_id <= 0) {
+            result->Error("INVALID_WINDOW_ID",
+              "Window id must be greater than 0.");
+            return;
+          }
         }
 
         // If window "options" are provided in the map, parse them.
@@ -96,7 +107,12 @@ namespace
         stringArgs = std::get<std::string>(*method_call.arguments());
       }
 
-      auto window_id = MultiWindowManager::Instance()->Create(stringArgs, options);
+      auto window_id = MultiWindowManager::Instance()->Create(stringArgs, options, requested_id);
+      if (window_id == MultiWindowManager::kCreateErrorIdInUse) {
+        result->Error("WINDOW_ID_IN_USE",
+          "Window id " + std::to_string(requested_id) + " is already in use.");
+        return;
+      }
       result->Success(flutter::EncodableValue(window_id));
       return;
     } else if (method_call.method_name() == "setHasListeners") {

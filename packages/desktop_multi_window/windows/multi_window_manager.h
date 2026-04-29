@@ -23,9 +23,16 @@ public:
   MultiWindowManager();
   ~MultiWindowManager();
 
+  // requested_id == 0 means auto-assign. A negative return value indicates
+  // an error: kCreateErrorInvalidId (requested id <= 0 but != 0 is impossible
+  // here since the caller passes 0 to opt out; reserved for future use) or
+  // kCreateErrorIdInUse if the requested id is already taken.
+  static constexpr int64_t kCreateErrorIdInUse = -1;
+
   int64_t Create(
     std::string args,
-    WindowOptions options
+    WindowOptions options,
+    int64_t requested_id = 0
   );
 
   void AttachFlutterMainWindow(

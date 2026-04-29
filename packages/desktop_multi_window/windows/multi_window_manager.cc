@@ -50,10 +50,23 @@ MultiWindowManager::~MultiWindowManager() {
   }
 }
 
-int64_t MultiWindowManager::Create(std::string args, WindowOptions options) {
+int64_t MultiWindowManager::Create(std::string args, WindowOptions options, int64_t requested_id) {
   std::unique_lock<std::shared_mutex> lock(windows_mutex_);
-  g_next_id_++;
-  int64_t id = g_next_id_;
+  int64_t id;
+  if (requested_id > 0) {
+    if (windows_.count(requested_id) != 0) {
+      return kCreateErrorIdInUse;
+    }
+    id = requested_id;
+    if (requested_id > g_next_id_) {
+      g_next_id_ = requested_id;
+    }
+  } else {
+    do {
+      g_next_id_++;
+    } while (windows_.count(g_next_id_) != 0);
+    id = g_next_id_;
+  }
 
   auto window = std::make_unique<FlutterWindow>(id, std::move(args), shared_from_this(), options);
   auto channel = window->GetInterWindowEventChannel();

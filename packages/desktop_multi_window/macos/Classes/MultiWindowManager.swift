@@ -137,12 +137,33 @@ class MultiWindowManager {
     }
   }
 
-  func create(arguments: String, windowOptions: WindowOptions) -> Int64 {
+  enum CreateError: Error {
+    case idInUse(Int64)
+    case invalidId(Int64)
+  }
+
+  func create(arguments: String, windowOptions: WindowOptions, requestedId: Int64? = nil) throws -> Int64 {
     windowsLock.lock()
     defer { windowsLock.unlock() }
 
-    id += 1
-    let windowId = id
+    let windowId: Int64
+    if let requested = requestedId {
+      if requested <= 0 {
+        throw CreateError.invalidId(requested)
+      }
+      if windows[requested] != nil {
+        throw CreateError.idInUse(requested)
+      }
+      windowId = requested
+      if requested > id {
+        id = requested
+      }
+    } else {
+      repeat {
+        id += 1
+      } while windows[id] != nil
+      windowId = id
+    }
 
     let window = FlutterWindow(id: windowId, arguments: arguments, windowOptions: windowOptions)
     window.delegate = self

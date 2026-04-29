@@ -23,7 +23,11 @@ class MultiWindowManager : public std::enable_shared_from_this<MultiWindowManage
 
   virtual ~MultiWindowManager();
 
-  int64_t Create(const std::string &args);
+  // requested_id == 0 means auto-assign. Returns kCreateErrorIdInUse if the
+  // requested id is already taken.
+  static constexpr int64_t kCreateErrorIdInUse = -1;
+
+  int64_t Create(const std::string &args, int64_t requested_id = 0);
 
   void AttachMainWindow(GtkWidget *main_flutter_window, std::unique_ptr<WindowChannel> window_channel);
 

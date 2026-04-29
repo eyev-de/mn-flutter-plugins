@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 
 #include <cstring>
+#include <string>
 
 #include "multi_window_manager.h"
 #include "desktop_multi_window_plugin_internal.h"
@@ -28,9 +29,34 @@ static void desktop_multi_window_plugin_handle_method_call(
 
   if (strcmp(method, "createWindow") == 0) {
     auto *args = fl_method_call_get_args(method_call);
-    auto *arguments = fl_value_get_string(args);
-    auto window = MultiWindowManager::Instance()->Create(arguments);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_int(window)));
+    const gchar *arguments = "";
+    int64_t requested_id = 0;
+    if (fl_value_get_type(args) == FL_VALUE_TYPE_MAP) {
+      auto *args_value = fl_value_lookup_string(args, "arguments");
+      if (args_value != nullptr && fl_value_get_type(args_value) == FL_VALUE_TYPE_STRING) {
+        arguments = fl_value_get_string(args_value);
+      }
+      auto *id_value = fl_value_lookup_string(args, "windowId");
+      if (id_value != nullptr && fl_value_get_type(id_value) == FL_VALUE_TYPE_INT) {
+        requested_id = fl_value_get_int(id_value);
+        if (requested_id <= 0) {
+          response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+              "INVALID_WINDOW_ID", "Window id must be greater than 0.", nullptr));
+          fl_method_call_respond(method_call, response, nullptr);
+          return;
+        }
+      }
+    } else if (fl_value_get_type(args) == FL_VALUE_TYPE_STRING) {
+      arguments = fl_value_get_string(args);
+    }
+    auto window = MultiWindowManager::Instance()->Create(arguments, requested_id);
+    if (window == MultiWindowManager::kCreateErrorIdInUse) {
+      auto message = std::string("Window id ") + std::to_string(requested_id) + " is already in use.";
+      response = FL_METHOD_RESPONSE(fl_method_error_response_new(
+          "WINDOW_ID_IN_USE", message.c_str(), nullptr));
+    } else {
+      response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_int(window)));
+    }
   } else if (strcmp(method, "show") == 0) {
     auto *args = fl_method_call_get_args(method_call);
     auto window_id = fl_value_get_int(args);

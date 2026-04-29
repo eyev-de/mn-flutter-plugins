@@ -39,15 +39,30 @@ class DesktopMultiWindow {
   ///
   /// You can use [WindowController] to control the window.
   ///
+  /// If [windowId] is provided, the new window will be created with that id
+  /// instead of an auto-assigned one. The id must be greater than 0 (id 0 is
+  /// reserved for the main window) and must not already be in use; otherwise
+  /// the platform side will throw a `PlatformException` with code
+  /// `INVALID_WINDOW_ID` or `WINDOW_ID_IN_USE`. The internal auto-increment
+  /// counter is bumped past any explicit id, so subsequent auto-assigned ids
+  /// will not collide.
+  ///
   /// NOTE: [createWindow] will only create a new window, you need to call
   /// [WindowController.show] to show the window.
-  static Future<WindowController> createWindow([String? arguments, WindowOptions? options]) async {
-    final Map<String, dynamic> args = {if (arguments != null) 'arguments': arguments, if (options != null) 'options': options.toJson()};
+  static Future<WindowController> createWindow([String? arguments, WindowOptions? options, int? windowId]) async {
+    if (windowId != null && windowId <= 0) {
+      throw ArgumentError.value(windowId, 'windowId', 'must be greater than 0');
+    }
+    final Map<String, dynamic> args = {
+      if (arguments != null) 'arguments': arguments,
+      if (options != null) 'options': options.toJson(),
+      if (windowId != null) 'windowId': windowId,
+    };
 
-    final windowId = await multiWindowChannel.invokeMethod<int>('createWindow', args);
-    assert(windowId != null, 'windowId is null');
-    assert(windowId! > 0, 'id must be greater than 0');
-    return WindowControllerImpl(windowId!);
+    final newWindowId = await multiWindowChannel.invokeMethod<int>('createWindow', args);
+    assert(newWindowId != null, 'windowId is null');
+    assert(newWindowId! > 0, 'id must be greater than 0');
+    return WindowControllerImpl(newWindowId!);
   }
 
   /// Invoke method on the isolate of the window.

@@ -43,9 +43,30 @@ public class FlutterMultiWindowPlugin: NSObject, FlutterPlugin {
         let windowOptions = WindowOptions(json: macosJson)
       {
         let arguments = call.arguments as? String
-        let windowId = MultiWindowManager.shared.create(
-          arguments: arguments ?? "", windowOptions: windowOptions)
-        result(windowId)
+        let requestedId = (args["windowId"] as? NSNumber)?.int64Value
+        do {
+          let windowId = try MultiWindowManager.shared.create(
+            arguments: arguments ?? "", windowOptions: windowOptions, requestedId: requestedId)
+          result(windowId)
+        } catch MultiWindowManager.CreateError.idInUse(let id) {
+          result(
+            FlutterError(
+              code: "WINDOW_ID_IN_USE",
+              message: "Window id \(id) is already in use.",
+              details: nil))
+        } catch MultiWindowManager.CreateError.invalidId(let id) {
+          result(
+            FlutterError(
+              code: "INVALID_WINDOW_ID",
+              message: "Window id \(id) is invalid (must be greater than 0).",
+              details: nil))
+        } catch {
+          result(
+            FlutterError(
+              code: "CREATE_FAILED",
+              message: "Failed to create window: \(error)",
+              details: nil))
+        }
       } else {
         result(
           FlutterError(
