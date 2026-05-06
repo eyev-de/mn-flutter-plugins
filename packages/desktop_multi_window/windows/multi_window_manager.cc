@@ -349,6 +349,23 @@ LRESULT CALLBACK MultiWindowManager::MouseProc(int nCode, WPARAM wParam, LPARAM 
 
   MSLLHOOKSTRUCT* hookStruct = (MSLLHOOKSTRUCT*)lParam;
 
+  // LLMHF_INJECTED is set for events produced by SendInput (including our own
+  // gaze-driven cursor warps). Without this guard the hook fires for every
+  // warp, and the Dart side misidentifies them as physical user input -- which
+  // resets the idle timer and keeps the cursor locked in physical mode forever.
+  // On macOS, CGWarpMouseCursorPosition never generates a mouseMoved event, so
+  // the equivalent issue does not exist there.
+  if (hookStruct->flags & LLMHF_INJECTED) {
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+  }
+
+  // Only report actual pointer movement to Dart. Button and wheel events
+  // also fire WH_MOUSE_LL but carry no new cursor position; forwarding them
+  // as "mouse-move" spuriously triggers notePhysicalInput() in cursor mode.
+  if (wParam != WM_MOUSEMOVE) {
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+  }
+
   auto coordinates = std::make_shared<flutter::EncodableMap>();
   (*coordinates)[flutter::EncodableValue("x")] = flutter::EncodableValue(static_cast<double>(hookStruct->pt.x));
   (*coordinates)[flutter::EncodableValue("y")] = flutter::EncodableValue(static_cast<double>(hookStruct->pt.y));
