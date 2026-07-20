@@ -252,10 +252,30 @@ void BaseFlutterWindow::Show() {
   // Hidden overlay windows are created before the first usable frame is visible.
   // Use the non-activating show path for WS_EX_NOACTIVATE windows and force a
   // redraw so the first reveal cannot stay stuck in a transparent state.
+  // SW_SHOWNA shows the window at its CURRENT size and position. Do not use
+  // SW_SHOWNOACTIVATE here: that is the non-activating variant of SW_SHOWNORMAL
+  // and displays the window at its "most recent" placement, which can undo a
+  // SetWindowPos performed while the window was hidden (callers deliberately
+  // resize hidden windows to avoid stale-surface scaling artifacts).
   const int show_command = windowPlacement.showCmd == SW_SHOWMINIMIZED
     ? SW_RESTORE
-    : (is_no_activate ? SW_SHOWNOACTIVATE : SW_SHOW);
+    : (is_no_activate ? SW_SHOWNA : SW_SHOW);
   ShowWindow(handle, show_command);
+
+  // Re-sync the Flutter view to the client area. The WM_SIZE from a resize
+  // performed while the window was hidden is not reliably processed, which
+  // leaves the child view (and the engine's window metrics) at the stale
+  // pre-hide size; MoveWindow to the already-correct rect is a no-op.
+  if (flutter_controller_) {
+    HWND view_handle = flutter_controller_->view()->GetNativeWindow();
+    if (view_handle) {
+      RECT client_rect;
+      GetClientRect(handle, &client_rect);
+      MoveWindow(view_handle, client_rect.left, client_rect.top,
+        client_rect.right - client_rect.left,
+        client_rect.bottom - client_rect.top, TRUE);
+    }
+  }
 
   UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW;
   if (is_no_activate) {
