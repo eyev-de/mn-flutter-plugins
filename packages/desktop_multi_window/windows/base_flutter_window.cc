@@ -875,10 +875,28 @@ void BaseFlutterWindow::SetIgnoreMouseEvents(bool ignore) {
     return;
   }
   LONG ex_style = GetWindowLong(handle, GWL_EXSTYLE);
+  // Click-through only needs WS_EX_TRANSPARENT: it makes hit-testing fall
+  // through to the window beneath (WM_NCHITTEST -> HTTRANSPARENT), which is all
+  // the mouse/wheel pass-through here requires. Deliberately do NOT toggle
+  // WS_EX_LAYERED. A layered top-level window is composited by DWM through a
+  // cached off-screen redirection bitmap that is incompatible with the engine's
+  // DXGI swapchain: on a resize that bitmap is scaled into the new frame (the
+  // skewed, partially-covered zoom/scope window), and re-applying it to the
+  // already-visible fullscreen scroll window mid-scroll freezes/offsets the live
+  // surface. Transparency for these overlays comes from the DWM acrylic
+  // composition set in SetBackgroundColor, not from layered alpha, so
+  // WS_EX_LAYERED is not needed. SetOpacity is the only feature that genuinely
+  // needs it, and it manages that bit on its own window.
   if (ignore)
-    ex_style |= (WS_EX_TRANSPARENT | WS_EX_LAYERED);
+    ex_style |= WS_EX_TRANSPARENT;
   else
-    ex_style &= ~(WS_EX_TRANSPARENT | WS_EX_LAYERED);
+    ex_style &= ~WS_EX_TRANSPARENT;
 
   SetWindowLong(handle, GWL_EXSTYLE, ex_style);
+
+  // An ex-style change via SetWindowLong is not guaranteed to take effect until
+  // the frame is recomputed; force that now with a dedicated no-move/no-resize
+  // SetWindowPos so click-through toggles apply immediately. Keeps the current
+  // z-order (SWP_NOZORDER) and focus (SWP_NOACTIVATE).
+  SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
